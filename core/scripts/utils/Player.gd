@@ -24,7 +24,6 @@ onready var player_on_floor: RayCast2D = $OnFloor
 # Terrain generation related
 onready var player_terrain_right: RayCast2D = $Right
 
-
 var double_jump: bool = false
 var friction: int = ground_friction
 var snap_direction: Vector2 = Vector2.DOWN
@@ -33,6 +32,7 @@ var motion: Vector2 = Vector2()
 
 func get_horizontal_input() -> float:
 	return (Input.get_action_strength(move_right_key) - Input.get_action_strength(move_left_key))
+
 func _physics_process(delta: float) -> void:
 	if is_on_floor():
 		friction = ground_friction
