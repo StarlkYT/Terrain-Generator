@@ -2,12 +2,33 @@ extends Node2D
 
 # TODO: Make terrain generates in both directions
 
-var block_scene: PackedScene = load("res://core/scenes/utils/Block.tscn")
 var random: RandomNumberGenerator = RandomNumberGenerator.new()
-var distance_position_x: int = 0
+var block_scene: PackedScene = load("res://core/scenes/utils/Block.tscn")
+var distance_position_x: int
+var body_node: Node
 
 onready var player_raycast_right: RayCast2D = $Player/Right
-onready var inside_camera_view: Area2D = $Player/Area2D
+onready var cursor: Node2D = $Cursor
+
+func _on_Area2D2_body_entered(body: Node) -> void:
+	body_node = body
+
+func _ready() -> void:
+	generate_chunk()
+	random.randomize()
+
+func _input(event: InputEvent) -> void:
+	if event.is_action_pressed("mouse_left_click"):
+		if body_node is StaticBody2D:
+			if not body_node == null:
+				body_node.queue_free()
+
+func _process(_delta: float) -> void:
+	cursor.position.x = get_global_mouse_position().x
+	cursor.position.y = get_global_mouse_position().y
+	if not player_raycast_right == null:
+		if (player_raycast_right.enabled) and not (player_raycast_right.is_colliding()):
+			generate_chunk()
 
 func place_block(position_x: int, position_y: int) -> void:
 	var block_instance: Node2D = block_scene.instance()
@@ -17,22 +38,7 @@ func place_block(position_x: int, position_y: int) -> void:
 
 func generate_chunk() -> void:
 	for _bar in range(4):
-		var random_position_y = random.randi_range(352, 480)
+		var random_position_y: int = random.randi_range(352, 480)
 		for _depth in range(8):
-			place_block(distance_position_x, random_position_y + (64 * _depth))
+			place_block(distance_position_x, (random_position_y + 64 * _depth))
 		distance_position_x += 64
-
-func _process(_delta: float) -> void:
-	if (player_raycast_right.enabled) and not (player_raycast_right.is_colliding()):
-		print("Chunk generated")
-		generate_chunk()
-
-func _ready() -> void:
-	random.randomize()
-	generate_chunk()
-
-func _on_Area2D_body_entered(body: Node) -> void:
-	body.visible = true
-
-func _on_Area2D_body_exited(body: Node) -> void:
-	body.visible = false
