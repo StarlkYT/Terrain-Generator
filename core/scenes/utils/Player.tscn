@@ -20,7 +20,7 @@ cast_to = Vector2( 0, 500 )
 [node name="OnFloor" type="RayCast2D" parent="."]
 position = Vector2( 0, 30 )
 enabled = true
-cast_to = Vector2( 0, 5 )
+cast_to = Vector2( 0, 10 )
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 shape = SubResource( 1 )
