@@ -10,8 +10,6 @@ export (int) var speed = 150
 export (int) var max_speed = 256
 export (int) var gravity = 375
 export (int) var jump_power = 256
-export (int) var snap_length = 32
-export (int) var max_floor_degree = 45
 export (bool) var double_jump_ability = true
 
 # Smoothing-related variables for player movement
@@ -23,11 +21,10 @@ onready var player_on_floor: RayCast2D = $OnFloor
 
 # Terrain generation related
 onready var player_terrain_right: RayCast2D = $Right
+onready var player_terrain_left: RayCast2D = $Left
 
 var double_jump: bool = false
 var friction: int = ground_friction
-var snap_direction: Vector2 = Vector2.DOWN
-var snap_vector: Vector2 = snap_direction * snap_length
 var motion: Vector2 = Vector2()
 
 func get_horizontal_input() -> float:
@@ -41,11 +38,13 @@ func _physics_process(delta: float) -> void:
 	apply_jump()
 	apply_gravity(delta)
 	apply_movement(delta)
-	motion.y = move_and_slide_with_snap(motion, snap_vector, Vector2.UP, deg2rad(max_floor_degree)).y
+	motion.y = move_and_slide(motion, Vector2.UP).y
 	
 func apply_movement(delta: float) -> void:
 	if get_horizontal_input() != 0:
+		player_sprite.flip_h = get_horizontal_input() < 1
 		player_terrain_right.enabled = get_horizontal_input() >= 1
+		player_terrain_left.enabled = get_horizontal_input() < 1
 		motion.x = lerp(motion.x, get_horizontal_input() * speed, friction * delta)
 	else:
 		motion.x = lerp(motion.x, 0, friction * delta)
@@ -53,7 +52,6 @@ func apply_movement(delta: float) -> void:
 func apply_jump() -> void:
 	if Input.is_action_just_pressed(jump_key):
 		if player_on_floor.is_colliding():
-			snap_vector = Vector2.UP
 			motion.y = -jump_power
 			double_jump = true
 		else:
@@ -61,8 +59,6 @@ func apply_jump() -> void:
 				if double_jump == true:
 					motion.y = -jump_power
 					double_jump = false
-	else:
-		snap_vector = snap_direction * snap_length
 
 func apply_gravity(delta: float) -> void:
 	motion.y += gravity * delta
